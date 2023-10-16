@@ -12,7 +12,7 @@ import javax.swing.Icon
 
 class NuShellColorSettingPage: ColorSettingsPage {
 
-    private val ATTRS = NuShellColors.entries.map { it.attributesDescriptor }.toTypedArray()
+    private val ATTRS = NuShellColors.values().map { it.attributesDescriptor }.toTypedArray()
 
     override fun getAttributeDescriptors(): Array<AttributesDescriptor> = ATTRS
 

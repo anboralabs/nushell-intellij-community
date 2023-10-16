@@ -1,7 +1,7 @@
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.9.0"
-    id("org.jetbrains.intellij") version "1.15.0"
+    id("org.jetbrains.kotlin.jvm") version "1.8.0"
+    id("org.jetbrains.intellij") version "1.16.0"
     id("org.jetbrains.grammarkit") version "2022.3.1"
 }
 
