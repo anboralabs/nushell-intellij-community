@@ -12,5 +12,10 @@
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="NuShell_Community" implementationClass="co.anbora.labs.nushell.community.lang.NuShellFileType"
                   fieldName="INSTANCE" language="nu_community_lang" extensions="nu"/>
+
+        <lang.commenter language="nu_community_lang" implementationClass="co.anbora.labs.nushell.community.ide.commenter.NuCommenter"/>
+        <lang.braceMatcher language="nu_community_lang" implementationClass="co.anbora.labs.nushell.community.ide.typing.NuShellBraceMatcher"/>
+        <quoteHandler fileType="nu_community_lang" className="co.anbora.labs.nushell.community.ide.editor.NuQuoteHandler"/>
+
     </extensions>
 </idea-plugin>
