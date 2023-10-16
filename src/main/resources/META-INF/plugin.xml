@@ -1,0 +1,16 @@
+<idea-plugin>
+    <id>co.anbora.labs.nushell.community</id>
+    <name>NuShell Community</name>
+    <vendor email="support@yourcompany.com" url="https://www.yourcompany.com">YourCompany</vendor>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType name="NuShell_Community" implementationClass="co.anbora.labs.nushell.community.lang.NuShellFileType"
+                  fieldName="INSTANCE" language="nu_community_lang" extensions="nu"/>
+    </extensions>
+</idea-plugin>

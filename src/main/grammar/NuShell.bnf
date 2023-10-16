@@ -1,0 +1,87 @@
+{
+  parserClass="co.anbora.labs.nushell.community.lang.core.parser.NuShellParser"
+  psiClassPrefix="NuShell"
+  psiImplClassSuffix="Impl"
+
+  implements="co.anbora.labs.nushell.community.lang.core.psi.NuShellElement"
+  extends="co.anbora.labs.nushell.community.lang.core.psi.NuShellElementImpl"
+
+  psiPackage="co.anbora.labs.nushell.community.lang.core.psi"
+  psiImplPackage="co.anbora.labs.nushell.community.lang.core.psi.impl"
+  // parserUtilClass="co.anbora.labs.nushell.community.lang.core.util.BrewParserUtil"
+
+  elementTypeHolderClass="co.anbora.labs.nushell.community.lang.core.psi.NuShellTypes"
+
+  elementTypeClass="co.anbora.labs.nushell.community.lang.core.NuShellElementType"
+  tokenTypeClass="co.anbora.labs.nushell.community.lang.core.NuShellTokenType"
+
+  tokens = [
+    BOOL_LITERAL     = 'bool_literal'
+    NUMBER_LITERAL   = 'number_literal'
+    STRING_LITERAL   = 'string_literal'
+
+    IDENTIFIER       = 'identifier'
+    VARIABLE         = 'variable'
+
+    L_BRACE          =  '{'
+    R_BRACE          =  '}'
+    L_BRACK          =  '['
+    R_BRACK          =  ']'
+    L_PAREN          =  '('
+    R_PAREN          =  ')'
+
+    COLON            =  ':'
+    COMMA            =  ','
+    DOT              =  '.'
+    QUESTION_MARK    =  '?'
+    DOLLAR           =  '$'
+    DOUBLE_QUOTE     =  '\"'
+    SINGLE_QUOTE     =  "\'"
+
+    MOD              = 'mod_op'
+    IN               = 'in_op'
+    NOT_IN           = 'not_in_op'
+    NOT              = 'not_op'
+    AND              = 'and_op'
+    OR               = 'or_op'
+    XOR              = 'xor_op'
+    BIT_OR           = 'bit_or_op'
+    BIT_AND          = 'bit_and_op'
+    BIT_XOR          = 'bit_xor_op'
+    BIT_SHL          = 'bit_shl_op'
+    BIT_SHR          = 'bit_shr_op'
+    STARTS_WITH      = 'starts_with_op'
+    ENDS_WITH        = 'ends_with_op'
+
+    DEF              = 'def_kw'
+    BREAK            = 'break_kw'
+    CONTINUE         = 'continue_kw'
+    ELSE             = 'else_kw'
+    IF               = 'if_kw'
+    FOR              = 'for_kw'
+    LOOP             = 'loop_kw'
+    RETURN           = 'return_kw'
+    TRY              = 'try_kw'
+    WHILE            = 'while_kw'
+    MUT              = 'mut_kw'
+    CONST            = 'const_kw'
+    LET              = 'let_kw'
+    ALIAS            = 'alias_kw'
+    NULL             = 'null_kw'
+
+    SYSTEM           = 'system_kw'
+    OTHER_IDENTIFIER = 'other_identifier'
+  ]
+}
+
+File ::= !<<eof>> item_* {pin=1 recoverWhile=recover_any}
+private recover_any ::= !(item_)
+
+private item_ ::= (BOOL_LITERAL | OTHER_IDENTIFIER | SYSTEM |
+                    NULL | ALIAS | LET | CONST |
+                    MUT | WHILE | TRY | RETURN |
+                    LOOP | FOR | IF | ELSE | CONTINUE |
+                    BREAK | DEF | ENDS_WITH | STARTS_WITH |
+                    BIT_SHR | BIT_SHL | BIT_XOR | BIT_AND |
+                    BIT_OR | XOR | OR | AND | NOT | NOT_IN |
+                    IN | MOD | LINE_TERMINATOR)
