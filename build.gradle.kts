@@ -97,7 +97,7 @@ tasks {
         purgeOldFiles.set(true)
     }
 
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    publishPlugin {
         dependsOn(generateNuShellLexer, generateNuShellParser)
     }
 }
