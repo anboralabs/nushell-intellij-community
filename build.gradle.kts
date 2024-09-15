@@ -4,7 +4,7 @@ fun environment(key: String) = providers.environmentVariable(key)
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.0.0"
-    id("org.jetbrains.intellij.platform") version "2.0.0-beta7"
+    id("org.jetbrains.intellij.platform") version "2.0.1"
     id("org.jetbrains.grammarkit") version "2022.3.2.2"
 }
 
@@ -75,6 +75,8 @@ intellijPlatform {
             recommended()
         }
     }
+
+    buildSearchableOptions = false
 }
 
 tasks {
