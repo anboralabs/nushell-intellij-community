@@ -71,6 +71,8 @@ object NuShellTypes {
     @JvmField val AMPERSAND = NuShellTokenType("&")
     @JvmField val QUESTION_MARK = NuShellTokenType("?")
     @JvmField val QUESTION_DOT = NuShellTokenType("?.")
+    @JvmField val TILDE = NuShellTokenType("~")
+    @JvmField val BACKSLASH = NuShellTokenType("\\")
     @JvmField val DOTDOTDOT = NuShellTokenType("...")
     @JvmField val ARROW = NuShellTokenType("->")
     @JvmField val FAT_ARROW = NuShellTokenType("=>")

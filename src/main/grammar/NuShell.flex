@@ -79,7 +79,7 @@ FILESIZE_SUFFIX  = (b|B|kb|kB|Kb|KB|mb|mB|Mb|MB|gb|gB|Gb|GB|tb|tB|Tb|TB|pb|pB|Pb
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Strings
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-SINGLE_STRING    = '([^'\\]|\\.)*'
+SINGLE_STRING    = '[^']*'
 DOUBLE_STRING    = \"([^\"\\]|\\.)*\"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -290,6 +290,7 @@ IDENTIFIER       = [a-zA-Z_][a-zA-Z0-9_\-]*
 <YYINITIAL, INTERP_EXPR> {
     "$\"\"\""              { atLineStart = false; pushState(STRING_INTERP); return INTERP_TRIPLE_STRING_START; }
     "$\""                  { atLineStart = false; pushState(STRING_INTERP); return INTERP_STRING_START; }
+    "$'" [^']* "'"          { atLineStart = false; return STRING_LITERAL; }
 }
 
 // ─── Raw strings: r#"..."#  r##"..."##  r###"..."### ───────────────────────────
@@ -339,6 +340,11 @@ IDENTIFIER       = [a-zA-Z_][a-zA-Z0-9_\-]*
 // ─── Triple-quoted strings ─────────────────────────────────────────────────────
 <YYINITIAL, INTERP_EXPR> {
     \"\"\" ([^\"]* | \"[^\"] | \"\"[^\"])* \"\"\"  { atLineStart = false; return TRIPLE_STRING_LITERAL; }
+}
+
+// ─── Backtick strings / command names ──────────────────────────────────────────
+<YYINITIAL, INTERP_EXPR> {
+    "`" [^`]* "`"          { atLineStart = false; return STRING_LITERAL; }
 }
 
 // ─── Regular strings ───────────────────────────────────────────────────────────
@@ -403,11 +409,18 @@ IDENTIFIER       = [a-zA-Z_][a-zA-Z0-9_\-]*
     "@"                    { atLineStart = false; return AT; }
     "?"                    { atLineStart = false; return QUESTION_MARK; }
     "_"                    { atLineStart = false; return UNDERSCORE; }
+    "~"                    { atLineStart = false; return TILDE; }
+    "\\"                   { atLineStart = false; return BACKSLASH; }
 }
 
 // ─── Identifiers (catch-all for words) ─────────────────────────────────────────
 <YYINITIAL, INTERP_EXPR> {
     {IDENTIFIER}           { atLineStart = false; return IDENTIFIER; }
+}
+
+// ─── Unicode catch-all (any char above ASCII that isn't matched elsewhere) ────
+<YYINITIAL, INTERP_EXPR> {
+    [^\x00-\x7F]+         { atLineStart = false; return IDENTIFIER; }
 }
 
 // ─── Fallback ──────────────────────────────────────────────────────────────────

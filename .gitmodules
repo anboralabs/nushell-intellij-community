@@ -1,0 +1,3 @@
+[submodule "src/test/resources/nu_scripts"]
+	path = src/test/resources/nu_scripts
+	url = git@github.com:nushell/nu_scripts.git
