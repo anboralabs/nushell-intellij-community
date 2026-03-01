@@ -4,6 +4,7 @@ import co.anbora.labs.nushell.community.ide.color.NuShellColors
 import co.anbora.labs.nushell.community.lang.core.*
 import co.anbora.labs.nushell.community.lang.core.psi.NuShellTypes
 import com.intellij.openapi.editor.colors.TextAttributesKey
+import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IElementType
 
 fun IElementType?.textAttributesKey(): TextAttributesKey? = map(this)?.textAttributesKey
@@ -27,6 +28,7 @@ private fun map(tokenType: IElementType?): NuShellColors? {
         NuShellTypes.SEMICOLON -> NuShellColors.SEMICOLON
         in NU_NUMBERS -> NuShellColors.NUMBERS
         in NU_FLAGS -> NuShellColors.FLAGS
+        TokenType.BAD_CHARACTER -> NuShellColors.BAD_CHAR
         else -> null
     }
 }

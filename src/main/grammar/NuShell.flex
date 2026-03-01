@@ -44,6 +44,7 @@ import static co.anbora.labs.nushell.community.lang.core.psi.NuShellTypes.*;
 %unicode
 
 %s STRING_INTERP
+%s STRING_INTERP_SQ
 %s INTERP_EXPR
 %s RAW_STRING
 
@@ -290,7 +291,7 @@ IDENTIFIER       = [a-zA-Z_][a-zA-Z0-9_\-]*
 <YYINITIAL, INTERP_EXPR> {
     "$\"\"\""              { atLineStart = false; pushState(STRING_INTERP); return INTERP_TRIPLE_STRING_START; }
     "$\""                  { atLineStart = false; pushState(STRING_INTERP); return INTERP_STRING_START; }
-    "$'" [^']* "'"          { atLineStart = false; return STRING_LITERAL; }
+    "$'"                  { atLineStart = false; pushState(STRING_INTERP_SQ); return INTERP_STRING_START; }
 }
 
 // ─── Raw strings: r#"..."#  r##"..."##  r###"..."### ───────────────────────────
@@ -322,6 +323,14 @@ IDENTIFIER       = [a-zA-Z_][a-zA-Z0-9_\-]*
     "\\u{" [0-9a-fA-F]+ "}" { return INTERP_STRING_CONTENT; }
     "\\x" [0-9a-fA-F]{2}  { return INTERP_STRING_CONTENT; }
     [^\"\\\(]+             { return INTERP_STRING_CONTENT; }
+    [^]                    { return INTERP_STRING_CONTENT; }
+}
+
+<STRING_INTERP_SQ> {
+    "("                    { interpParenDepth = 1; pushState(INTERP_EXPR); return INTERP_EXPR_START; }
+    "'"                   { popState(); return INTERP_STRING_END; }
+    "\\("                  { return INTERP_STRING_CONTENT; }
+    [^'\(]+               { return INTERP_STRING_CONTENT; }
     [^]                    { return INTERP_STRING_CONTENT; }
 }
 

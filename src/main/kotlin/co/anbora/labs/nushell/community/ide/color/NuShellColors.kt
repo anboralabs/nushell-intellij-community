@@ -19,9 +19,9 @@ enum class NuShellColors(humanName: String, default: TextAttributesKey) {
     COMMENTS("Comments", DefaultLanguageHighlighterColors.LINE_COMMENT),
     OPERATORS_WORDS(
         "Operators//Words",
-        TextAttributesKey.createTempTextAttributesKey(
+        TextAttributesKey.createTextAttributesKey(
             "OPERATORS_WORDS",
-            TextAttributes(Color.decode("#8A653B"), null, null, null, Font.PLAIN)
+            DefaultLanguageHighlighterColors.FUNCTION_DECLARATION
         )
     ),
     OPERATORS_SYMBOLS("Operators//Symbols", DefaultLanguageHighlighterColors.OPERATION_SIGN),
@@ -29,7 +29,8 @@ enum class NuShellColors(humanName: String, default: TextAttributesKey) {
     DOT("Operators//Dot", DefaultLanguageHighlighterColors.DOT),
     COMMA("Operators//Comma", DefaultLanguageHighlighterColors.COMMA),
     SEMICOLON("Operators//Semicolon", DefaultLanguageHighlighterColors.SEMICOLON),
-    FLAGS("Flags", DefaultLanguageHighlighterColors.METADATA);
+    FLAGS("Flags", DefaultLanguageHighlighterColors.METADATA),
+    BAD_CHAR("Bad Character", HighlighterColors.BAD_CHARACTER);
 
     val textAttributesKey = TextAttributesKey.createTextAttributesKey("co.anbora.labs.nushell.community.$name", default)
     val attributesDescriptor = AttributesDescriptor(humanName, textAttributesKey)
