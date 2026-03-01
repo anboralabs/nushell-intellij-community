@@ -115,16 +115,7 @@ tasks {
         purgeOldFiles.set(true)
     }
 
-    val generateNuShellParser = task<org.jetbrains.grammarkit.tasks.GenerateParserTask>("generateNuShellParser") {
-        dependsOn(generateNuShellLexer)
-        sourceFile.set(file("src/main/grammar/NuShell.bnf"))
-        targetRootOutputDir.set(file("src/main/gen"))
-        pathToParser.set("/co/anbora/labs/nushell/community/lang/core/parser/NuShellParser.java")
-        pathToPsiRoot.set("/co/anbora/labs/nushell/community/lang/core/psi")
-        purgeOldFiles.set(true)
-    }
-
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        dependsOn(generateNuShellParser)
+        dependsOn(generateNuShellLexer)
     }
 }

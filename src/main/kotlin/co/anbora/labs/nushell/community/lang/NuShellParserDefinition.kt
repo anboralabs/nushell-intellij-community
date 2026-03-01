@@ -1,11 +1,12 @@
 package co.anbora.labs.nushell.community.lang
 
-import co.anbora.labs.nushell.community.lang.core.NuShellTokenType
-
+/**
+ * Holds lexer-level token constants used by the generated NuShellLexer.
+ * The actual ParserDefinition (PSI layer) lives in the Pro plugin.
+ */
 class NuShellParserDefinition {
 
     companion object {
-        @JvmField val EOL_COMMENT = NuShellTokenType("EOL_COMMENT")
-        @JvmField val EOL_DOC_COMMENT = NuShellTokenType("EOL_DOC_COMMENT")
+        @JvmField val LINE_TERMINATOR = co.anbora.labs.nushell.community.lang.core.psi.NuShellTypes.LINE_TERMINATOR
     }
 }
