@@ -10,7 +10,7 @@ import javax.swing.JComponent
 class NuShellConfigurable : Configurable {
 
     private val providers: List<NuShellConfigurableProvider>
-        get() = NuShellConfigurableProvider.EP_NAME.extensionList
+        get() = NuShellConfigurableProvider.EP_NAME.extensionList.sortedBy { it.getOrder() }
 
     override fun getDisplayName(): String = NuShellBundle.message("nushell.settings.display.name")
 
