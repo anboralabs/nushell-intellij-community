@@ -17,6 +17,8 @@ interface NuShellConfigurableProvider {
 
     fun reset()
 
+    fun getOrder(): Int = 0
+
     companion object {
         val EP_NAME = ExtensionPointName.create<NuShellConfigurableProvider>(
             "co.anbora.labs.nushell.community.configurableProvider"

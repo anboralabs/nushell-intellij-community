@@ -1,5 +1,4 @@
 <idea-plugin>
-    <resource-bundle>messages.NuShellBundle</resource-bundle>
     <id>co.anbora.labs.nushell.community</id>
     <name>NuShell Community</name>
     <vendor email="support@anbora.co" url="https://labs.anbora.co">Anbora-labs</vendor>
@@ -7,6 +6,8 @@
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
+
+    <resource-bundle>messages.NuShellBundle</resource-bundle>
 
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
