@@ -1,4 +1,5 @@
 <idea-plugin>
+    <resource-bundle>messages.NuShellBundle</resource-bundle>
     <id>co.anbora.labs.nushell.community</id>
     <name>NuShell Community</name>
     <vendor email="support@anbora.co" url="https://labs.anbora.co">Anbora-labs</vendor>
@@ -9,6 +10,13 @@
 
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensionPoints>
+        <extensionPoint
+            name="configurableProvider"
+            interface="co.anbora.labs.nushell.community.ide.settings.NuShellConfigurableProvider"
+            dynamic="true"/>
+    </extensionPoints>
+
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="NuShell_Community" implementationClass="co.anbora.labs.nushell.community.lang.NuShellFileType"
                   fieldName="INSTANCE" language="nu_community_lang" extensions="nu"/>
@@ -19,5 +27,11 @@
         <lang.braceMatcher language="nu_community_lang" implementationClass="co.anbora.labs.nushell.community.ide.typing.NuShellBraceMatcher"/>
         <quoteHandler fileType="nu_community_lang" className="co.anbora.labs.nushell.community.ide.editor.NuQuoteHandler"/>
         <colorSettingsPage implementation="co.anbora.labs.nushell.community.ide.color.NuShellColorSettingPage"/>
+
+        <applicationConfigurable
+            provider="co.anbora.labs.nushell.community.ide.settings.NuShellSettingsConfigurableProvider"
+            id="co.anbora.labs.nushell.community.settings"
+            key="nushell.settings.display.name"
+            bundle="messages.NuShellBundle"/>
     </extensions>
 </idea-plugin>
