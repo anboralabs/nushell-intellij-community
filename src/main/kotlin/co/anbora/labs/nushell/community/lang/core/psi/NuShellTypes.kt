@@ -199,6 +199,34 @@ object NuShellTypes {
     @JvmField val LONG_FLAG = NuShellTokenType("long_flag")
     @JvmField val SHORT_FLAG = NuShellTokenType("short_flag")
 
+    // ── Special Variables ──────────────────────────────────────────────
+    @JvmField val VAR_ENV = NuShellTokenType("var_env")
+    @JvmField val VAR_NU = NuShellTokenType("var_nu")
+    @JvmField val VAR_IT = NuShellTokenType("var_it")
+    @JvmField val VAR_IN = NuShellTokenType("var_in")
+    @JvmField val VAR_NOTHING = NuShellTokenType("var_nothing")
+
+    // ── Glob Patterns ──────────────────────────────────────────────────
+    @JvmField val GLOB_PATTERN = NuShellTokenType("glob_pattern")
+
+    // ── Bare Words ─────────────────────────────────────────────────────
+    @JvmField val BARE_WORD = NuShellTokenType("bare_word")
+
+    // ── Line Continuation ──────────────────────────────────────────────
+    @JvmField val LINE_CONTINUATION = NuShellTokenType("line_continuation")
+
+    // ── Typed Literals ─────────────────────────────────────────────────
+    @JvmField val TYPED_INT_LITERAL = NuShellTokenType("typed_int_literal")
+    @JvmField val TYPED_FLOAT_LITERAL = NuShellTokenType("typed_float_literal")
+
+    // ── Format Strings ─────────────────────────────────────────────────
+    @JvmField val FORMAT_STRING_LITERAL = NuShellTokenType("format_string_literal")
+
+    // ── Here-doc ───────────────────────────────────────────────────────
+    @JvmField val HEREDOC_START = NuShellTokenType("heredoc_start")
+    @JvmField val HEREDOC_CONTENT = NuShellTokenType("heredoc_content")
+    @JvmField val HEREDOC_END = NuShellTokenType("heredoc_end")
+
     // ── Identifiers ────────────────────────────────────────────────────
     @JvmField val IDENTIFIER = NuShellTokenType("identifier")
     @JvmField val OTHER_IDENTIFIER = NuShellTokenType("other_identifier")

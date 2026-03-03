@@ -65,7 +65,16 @@ val NU_NUMBERS = tokenSetOf(
 val NU_STRINGS = tokenSetOf(
     NuShellTypes.STRING_LITERAL, NuShellTypes.RAW_STRING_LITERAL, NuShellTypes.TRIPLE_STRING_LITERAL,
     NuShellTypes.INTERP_STRING_START, NuShellTypes.INTERP_STRING_END, NuShellTypes.INTERP_STRING_CONTENT,
-    NuShellTypes.INTERP_TRIPLE_STRING_START
+    NuShellTypes.INTERP_TRIPLE_STRING_START,
+    NuShellTypes.FORMAT_STRING_LITERAL,
+    NuShellTypes.HEREDOC_START, NuShellTypes.HEREDOC_CONTENT, NuShellTypes.HEREDOC_END
 )
 
 val NU_FLAGS = tokenSetOf(NuShellTypes.LONG_FLAG, NuShellTypes.SHORT_FLAG)
+
+val NU_SPECIAL_VARS = tokenSetOf(
+    NuShellTypes.VAR_ENV, NuShellTypes.VAR_NU, NuShellTypes.VAR_IT,
+    NuShellTypes.VAR_IN, NuShellTypes.VAR_NOTHING
+)
+
+val NU_GLOBS = tokenSetOf(NuShellTypes.GLOB_PATTERN)

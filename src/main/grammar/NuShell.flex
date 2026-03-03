@@ -15,6 +15,7 @@ import static co.anbora.labs.nushell.community.lang.core.psi.NuShellTypes.*;
     private int interpParenDepth = 0;
     private int rawHashCount = 0;
     private boolean atLineStart = true;
+    private String heredocTag = null;
 
     private void pushState(int state) {
         stateStack.push(yystate());
@@ -43,10 +44,16 @@ import static co.anbora.labs.nushell.community.lang.core.psi.NuShellTypes.*;
 %type IElementType
 %unicode
 
+%s STRING_DOUBLE
 %s STRING_INTERP
 %s STRING_INTERP_SQ
 %s INTERP_EXPR
 %s RAW_STRING
+%s STRING_TRIPLE
+%s STRING_TRIPLE_INTERP
+%s LINE_CONT
+%s DOC_ATTR_STATE
+%s HEREDOC_BODY
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Whitespace
@@ -60,7 +67,6 @@ WHITE_SPACE      = {LINE_WS}+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 LINE_COMMENT     = "#" [^\r\n]*
 SHEBANG          = "#!" [^\r\n]*
-DOC_ATTR         = "#[" [^\]\r\n]* "]"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Numbers
@@ -81,7 +87,6 @@ FILESIZE_SUFFIX  = (b|B|kb|kB|Kb|KB|mb|mB|Mb|MB|gb|gB|Gb|GB|tb|tB|Tb|TB|pb|pB|Pb
 // Strings
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 SINGLE_STRING    = '[^']*'
-DOUBLE_STRING    = \"([^\"\\]|\\.)*\"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Raw strings: r#"..."# with variable # count
@@ -101,27 +106,47 @@ LONG_FLAG        = "--" [a-zA-Z][a-zA-Z0-9\-]*
 SHORT_FLAG       = "-" [a-zA-Z]
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Identifiers
+// Identifiers (including Unicode)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-IDENTIFIER       = [a-zA-Z_][a-zA-Z0-9_\-]*
+IDENTIFIER       = [a-zA-Z_\u0080-\uFFFF][a-zA-Z0-9_\-\u0080-\uFFFF]*
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Glob patterns
+///////////////////////////////////////////////////////////////////////////////////////////////////
+GLOB_PATTERN     = [a-zA-Z0-9_./\-]*[*?][a-zA-Z0-9_./\-*?]*
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Typed literals
+///////////////////////////////////////////////////////////////////////////////////////////////////
+TYPED_INT_SUFFIX   = (i8|i16|i32|i64|u8|u16|u32|u64)
+TYPED_FLOAT_SUFFIX = (f32|f64)
 
 %%
 
+// ─── Line continuation ─────────────────────────────────────────────────────────
+<YYINITIAL, INTERP_EXPR> {
+    "\\" {EOL_WS}          { atLineStart = true; return LINE_CONTINUATION; }
+}
+
 // ─── Whitespace & newlines (all states) ────────────────────────────────────────
 <YYINITIAL, INTERP_EXPR> {
-    {EOL_WS}+            { atLineStart = true; return LINE_TERMINATOR; }
-    {WHITE_SPACE}         { return WHITE_SPACE; }
+    {EOL_WS}+              { atLineStart = true; return LINE_TERMINATOR; }
+    {WHITE_SPACE}          { return WHITE_SPACE; }
 }
 
 // ─── Shebang (only at very start of file) ──────────────────────────────────────
 <YYINITIAL> {
-    {SHEBANG}             { if (atLineStart && getTokenStart() == 0) { atLineStart = false; return SHEBANG_COMMENT; } else { atLineStart = false; return EOL_COMMENT; } }
+    {SHEBANG}              { if (atLineStart && getTokenStart() == 0) { atLineStart = false; return SHEBANG_COMMENT; } else { atLineStart = false; return EOL_COMMENT; } }
+}
+
+// ─── Doc attributes with dedicated state ───────────────────────────────────────
+<YYINITIAL, INTERP_EXPR> {
+    "#[" [^\]\r\n]* "]"    { atLineStart = false; return DOC_ATTRIBUTE; }
 }
 
 // ─── Comments ──────────────────────────────────────────────────────────────────
 <YYINITIAL, INTERP_EXPR> {
-    {DOC_ATTR}            { atLineStart = false; return DOC_ATTRIBUTE; }
-    {LINE_COMMENT}        { atLineStart = false; return EOL_COMMENT; }
+    {LINE_COMMENT}         { atLineStart = false; return EOL_COMMENT; }
 }
 
 // ─── Compound keywords (longest match first) ──────────────────────────────────
@@ -289,7 +314,7 @@ IDENTIFIER       = [a-zA-Z_][a-zA-Z0-9_\-]*
 
 // ─── Interpolated strings ──────────────────────────────────────────────────────
 <YYINITIAL, INTERP_EXPR> {
-    "$\"\"\""              { atLineStart = false; pushState(STRING_INTERP); return INTERP_TRIPLE_STRING_START; }
+    "$\"\"\""              { atLineStart = false; pushState(STRING_TRIPLE_INTERP); return INTERP_TRIPLE_STRING_START; }
     "$\""                  { atLineStart = false; pushState(STRING_INTERP); return INTERP_STRING_START; }
     "$'"                  { atLineStart = false; pushState(STRING_INTERP_SQ); return INTERP_STRING_START; }
 }
@@ -311,7 +336,6 @@ IDENTIFIER       = [a-zA-Z_][a-zA-Z0-9_\-]*
 // ─── String interpolation states ───────────────────────────────────────────────
 <STRING_INTERP> {
     "("                    { interpParenDepth = 1; pushState(INTERP_EXPR); return INTERP_EXPR_START; }
-    "\"\"\""               { popState(); return INTERP_STRING_END; }
     "\""                   { popState(); return INTERP_STRING_END; }
     "\\\\"                 { return INTERP_STRING_CONTENT; }
     "\\\""                 { return INTERP_STRING_CONTENT; }
@@ -334,6 +358,23 @@ IDENTIFIER       = [a-zA-Z_][a-zA-Z0-9_\-]*
     [^]                    { return INTERP_STRING_CONTENT; }
 }
 
+// ─── Triple string interpolation state ─────────────────────────────────────────
+<STRING_TRIPLE_INTERP> {
+    "("                    { interpParenDepth = 1; pushState(INTERP_EXPR); return INTERP_EXPR_START; }
+    "\"\"\""               { popState(); return INTERP_STRING_END; }
+    "\\\\"                 { return INTERP_STRING_CONTENT; }
+    "\\\""                 { return INTERP_STRING_CONTENT; }
+    "\\("                  { return INTERP_STRING_CONTENT; }
+    "\\n"                  { return INTERP_STRING_CONTENT; }
+    "\\t"                  { return INTERP_STRING_CONTENT; }
+    "\\r"                  { return INTERP_STRING_CONTENT; }
+    "\\0"                  { return INTERP_STRING_CONTENT; }
+    "\\u{" [0-9a-fA-F]+ "}" { return INTERP_STRING_CONTENT; }
+    "\\x" [0-9a-fA-F]{2}  { return INTERP_STRING_CONTENT; }
+    [^\"\\\(]+             { return INTERP_STRING_CONTENT; }
+    [^]                    { return INTERP_STRING_CONTENT; }
+}
+
 <INTERP_EXPR> {
     "("                    { interpParenDepth++; return L_PAREN; }
     ")"                    {
@@ -346,9 +387,34 @@ IDENTIFIER       = [a-zA-Z_][a-zA-Z0-9_\-]*
                            }
 }
 
-// ─── Triple-quoted strings ─────────────────────────────────────────────────────
+// ─── Triple-quoted strings (with dedicated state) ──────────────────────────────
 <YYINITIAL, INTERP_EXPR> {
-    \"\"\" ([^\"]* | \"[^\"] | \"\"[^\"])* \"\"\"  { atLineStart = false; return TRIPLE_STRING_LITERAL; }
+    "\"\"\""               { atLineStart = false; pushState(STRING_TRIPLE); return TRIPLE_STRING_LITERAL; }
+}
+
+<STRING_TRIPLE> {
+    "\"\"\""               { popState(); return TRIPLE_STRING_LITERAL; }
+    "\\\""                 { return TRIPLE_STRING_LITERAL; }
+    [^\"]+ | \"            { return TRIPLE_STRING_LITERAL; }
+}
+
+// ─── Double-quoted strings (with dedicated state) ──────────────────────────────
+<YYINITIAL, INTERP_EXPR> {
+    "\""                   { atLineStart = false; pushState(STRING_DOUBLE); return STRING_LITERAL; }
+}
+
+<STRING_DOUBLE> {
+    "\""                   { popState(); return STRING_LITERAL; }
+    "\\\\"                 { return STRING_LITERAL; }
+    "\\\""                 { return STRING_LITERAL; }
+    "\\n"                  { return STRING_LITERAL; }
+    "\\t"                  { return STRING_LITERAL; }
+    "\\r"                  { return STRING_LITERAL; }
+    "\\0"                  { return STRING_LITERAL; }
+    "\\u{" [0-9a-fA-F]+ "}" { return STRING_LITERAL; }
+    "\\x" [0-9a-fA-F]{2}  { return STRING_LITERAL; }
+    "\\" .                 { return STRING_LITERAL; }
+    [^\"\\]+               { return STRING_LITERAL; }
 }
 
 // ─── Backtick strings / command names ──────────────────────────────────────────
@@ -356,10 +422,19 @@ IDENTIFIER       = [a-zA-Z_][a-zA-Z0-9_\-]*
     "`" [^`]* "`"          { atLineStart = false; return STRING_LITERAL; }
 }
 
-// ─── Regular strings ───────────────────────────────────────────────────────────
+// ─── Regular single-quoted strings ─────────────────────────────────────────────
 <YYINITIAL, INTERP_EXPR> {
     {SINGLE_STRING}        { atLineStart = false; return STRING_LITERAL; }
-    {DOUBLE_STRING}        { atLineStart = false; return STRING_LITERAL; }
+}
+
+// ─── Format strings: date#"...", glob#"...", regex#"..." ───────────────────────
+<YYINITIAL, INTERP_EXPR> {
+    [a-zA-Z]+ "#\"" ([^\"\\] | "\\.")* "\""  { atLineStart = false; return FORMAT_STRING_LITERAL; }
+}
+
+// ─── Here-doc: <<EOF ... EOF ───────────────────────────────────────────────────
+<YYINITIAL> {
+    "<<" [a-zA-Z_][a-zA-Z0-9_]* { atLineStart = false; return HEREDOC_START; }
 }
 
 // ─── Durations (before numbers, number+suffix) ─────────────────────────────────
@@ -378,12 +453,18 @@ IDENTIFIER       = [a-zA-Z_][a-zA-Z0-9_\-]*
     {OCT_LITERAL}          { atLineStart = false; return OCT_LITERAL; }
     {BIN_LITERAL}          { atLineStart = false; return BIN_LITERAL; }
 
+    // Typed float literals (before scientific/float)
+    "-"? {DIGIT} {DIGIT_US}* "." {DIGIT} {DIGIT_US}* {TYPED_FLOAT_SUFFIX}  { atLineStart = false; return TYPED_FLOAT_LITERAL; }
+
     // Scientific notation (before float)
     "-"? {DIGIT} {DIGIT_US}* "." {DIGIT} {DIGIT_US}* [eE] [+-]? {DIGIT} {DIGIT_US}*  { atLineStart = false; return SCIENTIFIC_LITERAL; }
     "-"? {DIGIT} {DIGIT_US}* [eE] [+-]? {DIGIT} {DIGIT_US}*                           { atLineStart = false; return SCIENTIFIC_LITERAL; }
 
     // Float
     "-"? {DIGIT} {DIGIT_US}* "." {DIGIT} {DIGIT_US}*  { atLineStart = false; return FLOAT_LITERAL; }
+
+    // Typed integer literals (before plain integer)
+    {DIGIT} {DIGIT_US}* {TYPED_INT_SUFFIX}  { atLineStart = false; return TYPED_INT_LITERAL; }
 
     // Integer
     {DIGIT} {DIGIT_US}*   { atLineStart = false; return INT_LITERAL; }
@@ -393,6 +474,15 @@ IDENTIFIER       = [a-zA-Z_][a-zA-Z0-9_\-]*
 <YYINITIAL, INTERP_EXPR> {
     {LONG_FLAG}            { atLineStart = false; return LONG_FLAG; }
     {SHORT_FLAG}           { atLineStart = false; return SHORT_FLAG; }
+}
+
+// ─── Special variables ─────────────────────────────────────────────────────────
+<YYINITIAL, INTERP_EXPR> {
+    "$env"                 { atLineStart = false; return VAR_ENV; }
+    "$nu"                  { atLineStart = false; return VAR_NU; }
+    "$it"                  { atLineStart = false; return VAR_IT; }
+    "$in"                  { atLineStart = false; return VAR_IN; }
+    "$nothing"             { atLineStart = false; return VAR_NOTHING; }
 }
 
 // ─── Variables ─────────────────────────────────────────────────────────────────
@@ -419,17 +509,26 @@ IDENTIFIER       = [a-zA-Z_][a-zA-Z0-9_\-]*
     "?"                    { atLineStart = false; return QUESTION_MARK; }
     "_"                    { atLineStart = false; return UNDERSCORE; }
     "~"                    { atLineStart = false; return TILDE; }
-    "\\"                   { atLineStart = false; return BACKSLASH; }
 }
 
-// ─── Identifiers (catch-all for words) ─────────────────────────────────────────
+// ─── Glob patterns ─────────────────────────────────────────────────────────────
+<YYINITIAL, INTERP_EXPR> {
+    {GLOB_PATTERN}         { atLineStart = false; return GLOB_PATTERN; }
+}
+
+// ─── Identifiers (catch-all for words, including Unicode) ──────────────────────
 <YYINITIAL, INTERP_EXPR> {
     {IDENTIFIER}           { atLineStart = false; return IDENTIFIER; }
 }
 
-// ─── Unicode catch-all (any char above ASCII that isn't matched elsewhere) ────
+// ─── Bare words (anything else that looks like a path or unquoted word) ────────
 <YYINITIAL, INTERP_EXPR> {
-    [^\x00-\x7F]+         { atLineStart = false; return IDENTIFIER; }
+    [a-zA-Z0-9_./\\\-][a-zA-Z0-9_./\\\-:]*  { atLineStart = false; return BARE_WORD; }
+}
+
+// ─── Unicode catch-all (any non-ASCII char including supplementary planes) ─────
+<YYINITIAL, INTERP_EXPR> {
+    [^\x00-\x7F]+          { atLineStart = false; return IDENTIFIER; }
 }
 
 // ─── Fallback ──────────────────────────────────────────────────────────────────
