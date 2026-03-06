@@ -2,6 +2,7 @@ package co.anbora.labs.nushell.community.ide.settings
 
 import co.anbora.labs.nushell.community.NuShellBundle
 import com.intellij.openapi.options.Configurable
+import com.intellij.ui.TitledSeparator
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
 import javax.swing.BorderFactory
@@ -17,12 +18,13 @@ class NuShellConfigurable : Configurable {
     override fun createComponent(): JComponent {
         return panel {
             for (provider in providers) {
-                separator()
-                group(provider.getDisplayName()) {
-                    row {
-                        cell(provider.getPanel())
-                            .align(AlignX.FILL)
-                    }
+                row {
+                    cell(TitledSeparator(provider.getDisplayName()))
+                        .align(AlignX.FILL)
+                }
+                row {
+                    cell(provider.getPanel())
+                        .align(AlignX.FILL)
                 }
             }
         }.withBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0))
