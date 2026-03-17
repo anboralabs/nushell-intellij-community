@@ -7,8 +7,8 @@ fun environment(key: String) = providers.environmentVariable(key)
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.2.0"
-    id("org.jetbrains.intellij.platform") version "2.11.0"
-    id("org.jetbrains.grammarkit") version "2023.3.0.1"
+    id("org.jetbrains.intellij.platform") version "2.13.1"
+    id("org.jetbrains.intellij.platform.grammarkit") version "2.13.1"
 }
 
 group = properties("pluginGroup").get()
@@ -112,13 +112,13 @@ tasks {
         gradleVersion = properties("gradleVersion").get()
     }
 
-    val generateNuShellLexer = task<org.jetbrains.grammarkit.tasks.GenerateLexerTask>("generateNuShellLexer") {
+    generateLexer {
         sourceFile.set(file("src/main/grammar/NuShell.flex"))
         targetOutputDir.set(file("src/main/gen/co/anbora/labs/nushell/community/lang/"))
         purgeOldFiles.set(true)
     }
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        dependsOn(generateNuShellLexer)
+        dependsOn("generateLexer")
     }
 }
