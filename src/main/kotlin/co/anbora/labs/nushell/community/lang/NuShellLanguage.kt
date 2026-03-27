@@ -3,9 +3,9 @@ package co.anbora.labs.nushell.community.lang
 import com.intellij.lang.Language
 import com.intellij.openapi.util.io.StreamUtil
 
-object NuShellLanguage: Language("nu_community_lang") {
+object NuShellLanguage: Language("NuShell") {
 
-    const val LANGUAGE_NAME = "NuShell_Community"
+    const val LANGUAGE_NAME = "NuShell"
 
     val LANGUAGE_DEMO_TEXT by lazy {
         val stream = javaClass.classLoader.getResourceAsStream("demo/script.nu")
