@@ -13,13 +13,13 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensionPoints>
         <extensionPoint
-            name="configurableProvider"
-            interface="co.anbora.labs.nushell.community.ide.settings.NuShellConfigurableProvider"
-            dynamic="true"/>
+                name="configurableProvider"
+                interface="co.anbora.labs.nushell.community.ide.settings.NuShellConfigurableProvider"
+                dynamic="true"/>
         <extensionPoint
-            name="parserDefinition"
-            interface="co.anbora.labs.nushell.community.lang.core.parser.NuParserDefinition"
-            dynamic="true"/>
+                name="parserDefinition"
+                interface="co.anbora.labs.nushell.community.lang.core.parser.NuParserDefinition"
+                dynamic="true"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -28,17 +28,21 @@
 
         <lang.syntaxHighlighterFactory language="NuShell"
                                        implementationClass="co.anbora.labs.nushell.community.ide.highlight.NuSyntaxHighlighterFactory"/>
-        <lang.parserDefinition language="NuShell" implementationClass="co.anbora.labs.nushell.community.lang.core.parser.NuParserDefinitionProxy"/>
-        <lang.commenter language="NuShell" implementationClass="co.anbora.labs.nushell.community.ide.commenter.NuCommenter"/>
-        <lang.braceMatcher language="NuShell" implementationClass="co.anbora.labs.nushell.community.ide.typing.NuShellBraceMatcher"/>
+        <lang.parserDefinition language="NuShell"
+                               implementationClass="co.anbora.labs.nushell.community.lang.core.parser.NuParserDefinitionProxy"/>
+        <lang.commenter language="NuShell"
+                        implementationClass="co.anbora.labs.nushell.community.ide.commenter.NuCommenter"/>
+        <lang.braceMatcher language="NuShell"
+                           implementationClass="co.anbora.labs.nushell.community.ide.typing.NuShellBraceMatcher"/>
         <quoteHandler fileType="NuShell" className="co.anbora.labs.nushell.community.ide.editor.NuQuoteHandler"/>
         <colorSettingsPage implementation="co.anbora.labs.nushell.community.ide.color.NuShellColorSettingPage"/>
 
         <applicationConfigurable
-            provider="co.anbora.labs.nushell.community.ide.settings.NuShellSettingsConfigurableProvider"
-            id="co.anbora.labs.nushell.community.settings"
-            key="nushell.settings.display.name"
-            bundle="messages.NuShellBundle"/>
+                groupId="tools"
+                provider="co.anbora.labs.nushell.community.ide.settings.NuShellSettingsConfigurableProvider"
+                id="co.anbora.labs.nushell.community.settings"
+                key="nushell.settings.display.name"
+                bundle="messages.NuShellBundle"/>
 
         <notificationGroup id="016eba21-fc5a-4801-afde-301092795482_Nu_Notification" displayType="STICKY_BALLOON"
                            key="nushell.notification.key"/>

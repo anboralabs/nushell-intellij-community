@@ -2,6 +2,8 @@ package co.anbora.labs.nushell.community.ide.settings
 
 import co.anbora.labs.nushell.community.NuShellBundle
 import com.intellij.openapi.options.Configurable
+import com.intellij.openapi.options.ShowSettingsUtil
+import com.intellij.openapi.project.Project
 import com.intellij.ui.TitledSeparator
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
@@ -38,5 +40,12 @@ class NuShellConfigurable : Configurable {
 
     override fun reset() {
         providers.forEach { it.reset() }
+    }
+
+    companion object {
+        @JvmStatic
+        fun show(project: Project) {
+            ShowSettingsUtil.getInstance().showSettingsDialog(project, NuShellConfigurable::class.java)
+        }
     }
 }
