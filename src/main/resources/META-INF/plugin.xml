@@ -39,6 +39,9 @@
             id="co.anbora.labs.nushell.community.settings"
             key="nushell.settings.display.name"
             bundle="messages.NuShellBundle"/>
+
+        <notificationGroup id="016eba21-fc5a-4801-afde-301092795482_Nu_Notification" displayType="STICKY_BALLOON"
+                           key="nushell.notification.key"/>
     </extensions>
 
     <extensions defaultExtensionNs="co.anbora.labs.nushell.community">
