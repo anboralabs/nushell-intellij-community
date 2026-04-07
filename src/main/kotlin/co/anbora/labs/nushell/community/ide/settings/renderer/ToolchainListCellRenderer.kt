@@ -9,7 +9,7 @@ import javax.swing.Icon
 import javax.swing.JList
 import kotlin.io.path.absolutePathString
 
-class ToolchainListCellRenderer(
+abstract class ToolchainListCellRenderer(
     private val nullToolchain: NullToolchain,
     private val iconProvider: () -> Icon
 ): ColoredListCellRenderer<Toolchain>() {
