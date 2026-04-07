@@ -37,6 +37,8 @@
         <quoteHandler fileType="NuShell" className="co.anbora.labs.nushell.community.ide.editor.NuQuoteHandler"/>
         <colorSettingsPage implementation="co.anbora.labs.nushell.community.ide.color.NuShellColorSettingPage"/>
 
+        <postStartupActivity implementation="co.anbora.labs.nushell.community.ide.startup.FeaturesInit"/>
+
         <applicationConfigurable
                 groupId="tools"
                 provider="co.anbora.labs.nushell.community.ide.settings.NuShellSettingsConfigurableProvider"
