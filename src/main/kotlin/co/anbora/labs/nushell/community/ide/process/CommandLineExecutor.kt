@@ -14,10 +14,10 @@ import java.util.concurrent.TimeoutException
 object CommandLineExecutor {
     private val LOG = logger<CommandLineExecutor>()
 
-    fun executeAndReturnOutput(execBinName: String, exePath: String, vararg arguments: String): String {
+    fun executeAndReturnOutput(options: CommandLineExecuteOptions): String {
         val cmd = GeneralCommandLine()
-            .withExePath(exePath)
-            .withParameters(*arguments)
+            .withExePath(options.exePath)
+            .withParameters(*options.arguments.toTypedArray())
             .withCharset(StandardCharsets.UTF_8)
 
         val processOutput = StringBuilder()
@@ -26,7 +26,7 @@ object CommandLineExecutor {
             handler.addProcessListener(object : CapturingProcessAdapter() {
                 override fun processTerminated(event: ProcessEvent) {
                     if (event.exitCode != 0) {
-                        LOG.warn("Couldn't get $execBinName toolchain version: " + output.stderr)
+                        LOG.warn("Couldn't get ${options.execBinName} toolchain version: " + output.stderr)
                     } else {
                         processOutput.append(output.stdout)
                     }
@@ -38,9 +38,9 @@ object CommandLineExecutor {
             }
             future.get(2000, TimeUnit.MILLISECONDS)
         } catch (e: ExecutionException) {
-            LOG.warn("Can't execute command for getting $execBinName toolchain version", e)
+            LOG.warn("Can't execute command for getting ${options.execBinName} toolchain version", e)
         } catch (e: TimeoutException) {
-            LOG.warn("Can't execute command for getting $execBinName toolchain version", e)
+            LOG.warn("Can't execute command for getting ${options.execBinName} toolchain version", e)
         }
         return processOutput.toString()
     }
