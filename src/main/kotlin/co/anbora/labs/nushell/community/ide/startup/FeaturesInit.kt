@@ -17,6 +17,11 @@ class FeaturesInit: ProjectActivity {
             pluginId = "co.anbora.labs.nushell.lsp",
             pluginLink = "https://plugins.jetbrains.com/plugin/31106-nu-lsp",
             notificationText = "Nu LSP to get better support"
+        ),
+        PluginFeatures(
+            pluginId = "co.anbora.labs.nushell.lint",
+            pluginLink = "https://plugins.jetbrains.com/plugin/31165-nu-lint",
+            notificationText = "Linter support"
         )
     )
 
