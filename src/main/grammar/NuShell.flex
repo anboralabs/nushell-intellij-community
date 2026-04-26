@@ -49,6 +49,7 @@ import static co.anbora.labs.nushell.community.lang.core.psi.NuShellTypes.*;
 %s STRING_INTERP_SQ
 %s INTERP_EXPR
 %s RAW_STRING
+%s RAW_STRING_SQ
 %s STRING_TRIPLE
 %s STRING_TRIPLE_INTERP
 %s LINE_CONT
@@ -330,6 +331,20 @@ TYPED_FLOAT_SUFFIX = (f32|f64)
     "\"#"                  { if (rawHashCount == 1) { popState(); return RAW_STRING_LITERAL; } }
     "\"##"                 { if (rawHashCount == 2) { popState(); return RAW_STRING_LITERAL; } }
     "\"###"                { if (rawHashCount == 3) { popState(); return RAW_STRING_LITERAL; } }
+    [^]                    { return RAW_STRING_LITERAL; }
+}
+
+// ─── Raw strings (single-quote): r#'...'#  r##'...'##  r###'...'### ─────────
+<YYINITIAL, INTERP_EXPR> {
+    "r###'"                { atLineStart = false; rawHashCount = 3; pushState(RAW_STRING_SQ); return RAW_STRING_LITERAL; }
+    "r##'"                 { atLineStart = false; rawHashCount = 2; pushState(RAW_STRING_SQ); return RAW_STRING_LITERAL; }
+    "r#'"                  { atLineStart = false; rawHashCount = 1; pushState(RAW_STRING_SQ); return RAW_STRING_LITERAL; }
+}
+
+<RAW_STRING_SQ> {
+    "'#"                   { if (rawHashCount == 1) { popState(); return RAW_STRING_LITERAL; } }
+    "'##"                  { if (rawHashCount == 2) { popState(); return RAW_STRING_LITERAL; } }
+    "'###"                 { if (rawHashCount == 3) { popState(); return RAW_STRING_LITERAL; } }
     [^]                    { return RAW_STRING_LITERAL; }
 }
 
