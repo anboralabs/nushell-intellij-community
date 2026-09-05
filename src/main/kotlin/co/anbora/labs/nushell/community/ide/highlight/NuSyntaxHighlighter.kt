@@ -10,6 +10,6 @@ class NuSyntaxHighlighter: SyntaxHighlighterBase() {
     override fun getHighlightingLexer(): Lexer = NuLexer()
 
     override fun getTokenHighlights(
-        tokenType: IElementType?
+        tokenType: IElementType
     ): Array<TextAttributesKey> = pack(tokenType.textAttributesKey())
 }
