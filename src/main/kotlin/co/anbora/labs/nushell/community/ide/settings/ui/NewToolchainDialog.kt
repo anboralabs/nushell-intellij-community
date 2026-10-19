@@ -4,17 +4,28 @@ package co.anbora.labs.nushell.community.ide.settings.ui
 import co.anbora.labs.nushell.community.ide.extensions.toPath
 import co.anbora.labs.nushell.community.ide.extensions.toPathOrNull
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.asContextElement
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.JBColor
 import com.intellij.ui.dsl.builder.*
 import com.intellij.ui.layout.ValidationInfoBuilder
 import com.intellij.util.ui.JBDimension
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import javax.swing.JComponent
 import javax.swing.JLabel
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
+import kotlin.time.Duration.Companion.milliseconds
 
 class NewToolchainDialog(
     private val options: NewToolchainOptions
@@ -30,6 +41,9 @@ class NewToolchainDialog(
     private val toolchainVersion = JLabel()
     private val toolchainIconLabel = JLabel()
     private val pathToToolchainComboBox = ToolchainPathChoosingComboBox { onToolchainLocationChanged() }
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.EDT + ModalityState.any().asContextElement())
+    private var versionJob: Job? = null
 
     init {
         title = options.title
@@ -58,7 +72,7 @@ class NewToolchainDialog(
             }
         }
 
-        pathToToolchainComboBox.addToolchainsAsync {
+        pathToToolchainComboBox.addToolchainsAsync(this.disposable) {
             options.suggestedHomePaths
         }
 
@@ -92,8 +106,26 @@ class NewToolchainDialog(
 
     private fun onToolchainLocationChanged() {
         model.toolchainLocation = pathToToolchainComboBox.selectedPath ?: ""
+        val location = model.toolchainLocation
 
-        model.toolchainVersion = options.versionMapper.apply(model.toolchainLocation, options.executableToolchain)
+        // Until the version of the new location is known, the model keeps it as undefined
+        updateToolchainVersion(options.undefinedVersion)
+
+        versionJob?.cancel()
+        if (location.isBlank()) {
+            return
+        }
+
+        showDetectingVersion()
+        versionJob = scope.launch {
+            // Wait for the user to stop typing before running ngrok
+            delay(300.milliseconds)
+            updateToolchainVersion(options.versionMapper.apply(model.toolchainLocation, options.executableToolchain))
+        }
+    }
+
+    private fun updateToolchainVersion(version: String) {
+        model.toolchainVersion = version
 
         if (model.toolchainVersion != options.undefinedVersion) {
             val path = model.toolchainLocation.toPathOrNull()
@@ -113,6 +145,12 @@ class NewToolchainDialog(
         }
     }
 
+    private fun showDetectingVersion() {
+        toolchainVersion.text = "Detecting..."
+        toolchainVersion.foreground = JBColor.foreground()
+        toolchainIconLabel.icon = AnimatedIcon.Default.INSTANCE
+    }
+
     private fun ValidationInfoBuilder.validateToolchainPath(): ValidationInfo? {
         if (model.toolchainLocation.isEmpty()) {
             return error("${options.executableToolchain.getExecutable()} location is required")
@@ -127,7 +165,7 @@ class NewToolchainDialog(
             return error("${options.executableToolchain.getExecutable()} location must be a directory")
         }
 
-        val version = options.versionMapper.apply(model.toolchainLocation, options.executableToolchain)
+        val version = model.toolchainVersion
         if (version == options.undefinedVersion) {
             return error("${options.executableToolchain.getExecutable()} location is invalid, can't get version. Please check that folder contains ${options.executableToolchain.getExecutable()}")
         }

@@ -2,15 +2,24 @@ package co.anbora.labs.nushell.community.ide.settings.ui
 
 import co.anbora.labs.nushell.community.ide.extensions.addTextChangeListener
 import co.anbora.labs.nushell.community.ide.extensions.pathAsPath
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.asContextElement
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.ui.ComboBoxWithWidePopup
 import com.intellij.openapi.ui.ComponentWithBrowseButton
+import com.intellij.openapi.util.Disposer
 import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.ComboboxSpeedSearch
 import com.intellij.ui.components.fields.ExtendableTextComponent
 import com.intellij.ui.components.fields.ExtendableTextField
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.nio.file.Path
@@ -61,13 +70,16 @@ class ToolchainPathChoosingComboBox(onTextChanged: () -> Unit = {}) :
     }
 
     /**
-     * Obtains a list of toolchains on a pool using [toolchainObtainer], then fills the combobox and calls [callback] on the EDT.
+     * Obtains a list of toolchains on the IO dispatcher using [toolchainObtainer], then fills the combobox on the EDT.
+     * The work is cancelled when [parentDisposable] is disposed.
      */
-    @Suppress("UnstableApiUsage")
-    fun addToolchainsAsync(toolchainObtainer: () -> List<Path>) {
+    fun addToolchainsAsync(parentDisposable: Disposable, toolchainObtainer: () -> List<Path>) {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.EDT)
+        Disposer.register(parentDisposable) { scope.cancel() }
+
         setBusy(true)
-        runBlocking {
-            val toolchains = withContext(Dispatchers.Default) {
+        scope.launch(ModalityState.any().asContextElement()) {
+            val toolchains = withContext(Dispatchers.IO) {
                 try {
                     toolchainObtainer()
                 } catch (e: Exception) {
