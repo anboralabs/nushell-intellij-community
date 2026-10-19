@@ -4,6 +4,7 @@ import co.anbora.labs.nushell.community.NuShellBundle
 import co.anbora.labs.nushell.community.ide.actions.Install
 import co.anbora.labs.nushell.community.ide.features.PluginFeatures
 import co.anbora.labs.nushell.community.ide.notifications.Notifications
+import com.intellij.ide.plugins.PluginDetailsService
 import com.intellij.ide.plugins.PluginManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.extensions.PluginId
@@ -26,11 +27,11 @@ class FeaturesInit: ProjectActivity {
     )
 
     override suspend fun execute(project: Project) {
-        val pluginManager = PluginManager.getInstance()
+        val pluginManager = PluginDetailsService.getInstance()
 
         for (feature in features) {
 
-            val plugin = pluginManager.findEnabledPlugin(PluginId.getId(feature.pluginId))
+            val plugin = pluginManager.findDetails(PluginId.getId(feature.pluginId))
 
             if (plugin == null) {
                 val notification = Notifications.createNotification(
